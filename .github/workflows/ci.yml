@@ -26,3 +26,11 @@ jobs:
 
     - name: Run Tests
       run: mvn test
+
+    - name: SonarCloud Scan
+      run: mvn sonar:sonar \
+        -Dsonar.projectKey=sanikashidore_Web-Crawler-Deploy \
+        -Dsonar.organization=sanikashidore \
+        -Dsonar.host.url=https://sonarcloud.io \
+        -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
