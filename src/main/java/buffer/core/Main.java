@@ -54,7 +54,7 @@ public class Main {
 
         Trie trie = new Trie();
 
-        loadKeywordsFromCSV("src/main/resources/keywords.csv", trie);
+        loadKeywordsFromCSV("keywords.csv", trie);
 
 
 
@@ -79,7 +79,7 @@ public class Main {
         if (suggestions.isEmpty()) {
             System.out.println(" No keyword suggestions found. Using typed keyword.");
             suggestions.add(prefix);  // fallback to original input
-            appendKeywordToCSV("src/main/resources/keywords.csv", prefix);
+            appendKeywordToCSV("keywords.csv", prefix);
             keywordAdded = true;
         } else {
             System.out.println("🔎 Suggestions:");
@@ -95,7 +95,7 @@ public class Main {
                 prefix = suggestions.get(choice - 1);
             } else {
                 if (!suggestions.contains(prefix)) {
-                    appendKeywordToCSV("src/main/resources/keywords.csv", prefix);
+                    appendKeywordToCSV("keywords.csv", prefix);
                     keywordAdded = true;
                 }
             }
