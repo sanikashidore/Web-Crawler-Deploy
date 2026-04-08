@@ -29,3 +29,9 @@ jobs:
 
     - name: SonarCloud Scan
       run: mvn sonar:sonar -Dsonar.projectKey=sanikashidore_Web-Crawler-Deploy -Dsonar.organization=sanikashidore -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
+
+    - name: Build Docker Image
+      run: docker build -t research-crawler-img .
+
+    - name: Run Container
+      run: docker run research-crawler-img
