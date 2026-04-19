@@ -7,6 +7,7 @@ import java.util.List;
 
 public class TrieTest {
 
+
     @Test
     void testInsertAndSearch() {
         Trie trie = new Trie();
@@ -38,4 +39,69 @@ public class TrieTest {
 
         assertEquals(3, result.size());
     }
+
+
+    @Test
+    void testEmptyInput() {
+        Trie trie = new Trie();
+        List<String> result = trie.suggest("");
+
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testDuplicateInsert() {
+        Trie trie = new Trie();
+        trie.insert("ai");
+        trie.insert("ai");
+
+        List<String> result = trie.suggest("a");
+
+        assertEquals(1, result.size());
+    }
+
+    @Test
+    void testExactMatch() {
+        Trie trie = new Trie();
+        trie.insert("data");
+
+        List<String> result = trie.suggest("data");
+
+        assertTrue(result.contains("data"));
+    }
+
+@Test
+    void testPrefixLongerThanWord() {
+        Trie trie = new Trie();
+        trie.insert("ai");
+
+        List<String> result = trie.suggest("artificial");
+
+        assertTrue(result.isEmpty());
+    }
+
+@Test
+    void testSpecialCharacters() {
+        Trie trie = new Trie();
+        trie.insert("machine-learning");
+
+        List<String> result = trie.suggest("machine");
+
+        assertTrue(result.contains("machine-learning"));
+    }
+
+@Test
+    void testManyInsertions() {
+        Trie trie = new Trie();
+
+        for (int i = 0; i < 100; i++) {
+            trie.insert("data" + i);
+        }
+
+        List<String> result = trie.suggest("data");
+
+        assertEquals(100, result.size());
+    }
+
+  
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="buffer.TrieTest" time="0.025" tests="9" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report.xsd" version="3.0.2" name="buffer.MainTest" time="0.022" tests="6" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -59,13 +59,13 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testSpecialCharacters" classname="buffer.TrieTest" time="0.0"/>
-  <testcase name="testInsertAndSearch" classname="buffer.TrieTest" time="0.001"/>
-  <testcase name="testEmptyInput" classname="buffer.TrieTest" time="0.001"/>
-  <testcase name="testManyInsertions" classname="buffer.TrieTest" time="0.001"/>
-  <testcase name="testDuplicateInsert" classname="buffer.TrieTest" time="0.008"/>
-  <testcase name="testPrefixNotFound" classname="buffer.TrieTest" time="0.001"/>
-  <testcase name="testPrefixLongerThanWord" classname="buffer.TrieTest" time="0.0"/>
-  <testcase name="testMultipleWords" classname="buffer.TrieTest" time="0.002"/>
-  <testcase name="testExactMatch" classname="buffer.TrieTest" time="0.002"/>
+  <testcase name="testLoadKeywordsInvalidPath" classname="buffer.MainTest" time="0.005">
+    <system-out><![CDATA[âš  Error reading keywords: invalid_path.csv (The system cannot find the file specified)
+]]></system-out>
+  </testcase>
+  <testcase name="testFilterByYearLogic" classname="buffer.MainTest" time="0.0"/>
+  <testcase name="testFilterByAuthorLogic" classname="buffer.MainTest" time="0.0"/>
+  <testcase name="testLoadKeywordsFromCSV" classname="buffer.MainTest" time="0.012"/>
+  <testcase name="testAppendKeywordToCSV" classname="buffer.MainTest" time="0.001"/>
+  <testcase name="testLoadKeywordsEmptyFile" classname="buffer.MainTest" time="0.0"/>
 </testsuite>
