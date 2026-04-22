@@ -21,11 +21,16 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
 
-    - name: Build with Maven
-      run: mvn clean install
+    - name: Build, Test & Coverage
+      run: mvn clean verify
 
-    - name: Run Tests
-      run: mvn test
+    - name: SonarCloud Scan
+      run: mvn sonar:sonar \
+        -Dsonar.projectKey=sanikashidore_Web-Crawler-Deploy \
+        -Dsonar.organization=sanikashidore \
+        -Dsonar.host.url=https://sonarcloud.io \
+        -Dsonar.login=${{ secrets.SONAR_TOKEN }} \    
+        -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
 
     - name: SonarCloud Scan
       run: mvn sonar:sonar -Dsonar.projectKey=sanikashidore_Web-Crawler-Deploy -Dsonar.organization=sanikashidore -Dsonar.host.url=https://sonarcloud.io -Dsonar.login=${{ secrets.SONAR_TOKEN }}
