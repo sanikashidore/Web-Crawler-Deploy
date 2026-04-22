@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ArvixCrawler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">buffer.Crawler</a> &gt; <span class="el_source">ArvixCrawler.java</span></div><h1>ArvixCrawler.java</h1><pre class="source lang-java linenums">package buffer.Crawler;
+import buffer.model.Paper; 
+import org.jsoup.Jsoup; 
+import org.jsoup.nodes.Document; 
+import org.jsoup.nodes.Element; 
+import org.jsoup.select.Elements; 
+import java.util.ArrayList; 
+import java.util.Arrays; 
+import java.util.List;
+
+<span class="fc" id="L11">public class ArvixCrawler implements buffer.Crawler.Crawler{</span>
+	private static final String BASE_URL = &quot;https://arxiv.org/search/?query=&quot;;
+	private static final int MAX_RESULTS = 5;
+
+	@Override
+	public List&lt;Paper&gt; search(String keyword) {
+<span class="fc" id="L17">	    List&lt;Paper&gt; results = new ArrayList&lt;&gt;();</span>
+	    try {
+	        // Add delay to avoid rate limiting
+<span class="fc" id="L20">	        Thread.sleep(2000);</span>
+	        
+<span class="fc" id="L22">	        String searchUrl = BASE_URL + keyword.replace(&quot; &quot;, &quot;+&quot;) + &quot;&amp;searchtype=all&quot;;</span>
+<span class="fc" id="L23">	        Document doc = Jsoup.connect(searchUrl)</span>
+<span class="fc" id="L24">	                .userAgent(&quot;Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36&quot;)</span>
+<span class="fc" id="L25">	                .referrer(&quot;https://arxiv.org/&quot;)</span>
+<span class="fc" id="L26">	                .timeout(20_000)</span>
+<span class="fc" id="L27">	                .get();</span>
+
+<span class="fc" id="L29">	        Elements paperCards = doc.select(&quot;li.arxiv-result&quot;);</span>
+
+<span class="fc" id="L31">	        int count = 0;</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">	        for (Element card : paperCards) {</span>
+<span class="fc bfc" id="L33" title="All 2 branches covered.">	            if (count &gt;= MAX_RESULTS) break;</span>
+
+	            // Title
+<span class="fc" id="L36">	            Element titleElem = card.selectFirst(&quot;p.title&quot;);</span>
+<span class="pc bpc" id="L37" title="1 of 2 branches missed.">	            String title = titleElem != null ? titleElem.text().trim() : &quot;N/A&quot;;</span>
+
+	            // Authors
+<span class="fc" id="L40">	            Element authorsElem = card.selectFirst(&quot;p.authors&quot;);</span>
+<span class="fc" id="L41">	            List&lt;String&gt; authors = new ArrayList&lt;&gt;();</span>
+<span class="pc bpc" id="L42" title="1 of 2 branches missed.">	            if (authorsElem != null) {</span>
+<span class="fc" id="L43">	                Elements authorLinks = authorsElem.select(&quot;a&quot;);</span>
+<span class="fc bfc" id="L44" title="All 2 branches covered.">	                for (Element a : authorLinks) {</span>
+<span class="fc" id="L45">	                    authors.add(a.text());</span>
+<span class="fc" id="L46">	                }</span>
+	            }
+
+	            // Abstract
+<span class="fc" id="L50">	            Element abstractElem = card.selectFirst(&quot;span.abstract-full&quot;);</span>
+<span class="pc bpc" id="L51" title="1 of 2 branches missed.">	            String abstractText = abstractElem != null ? abstractElem.text().trim().replaceAll(&quot;^Abstract: &quot;, &quot;&quot;) : &quot;N/A&quot;;</span>
+
+	            // Link
+<span class="fc" id="L54">	            Element linkElem = card.selectFirst(&quot;p.list-title a[href]&quot;);</span>
+<span class="pc bpc" id="L55" title="1 of 2 branches missed.">	            String link = linkElem != null ? linkElem.attr(&quot;href&quot;) : &quot;N/A&quot;;</span>
+
+	            // Date (optional)
+<span class="fc" id="L58">	            Element dateElem = card.selectFirst(&quot;p.is-size-7&quot;);</span>
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">	            String date = dateElem != null ? dateElem.text().replaceAll(&quot;Submitted &quot;, &quot;&quot;).trim() : &quot;N/A&quot;;</span>
+
+<span class="fc" id="L61">	            results.add(new Paper(title, authors, abstractText, date, link, &quot;arXiv&quot;));</span>
+<span class="fc" id="L62">	            count++;</span>
+<span class="fc" id="L63">	        }</span>
+
+<span class="nc" id="L65">	    } catch (Exception e) {</span>
+<span class="nc" id="L66">	        e.printStackTrace();</span>
+<span class="fc" id="L67">	    }</span>
+<span class="fc" id="L68">	    return results;</span>
+	}
+
+
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Main.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">crawler</a> &gt; <a href="index.source.html" class="el_package">buffer.core</a> &gt; <span class="el_source">Main.java</span></div><h1>Main.java</h1><pre class="source lang-java linenums">package buffer.core;
+
+
+
+import buffer.Crawler.GoogleScholarCrawler;
+
+
+
+
+
+import java.util.*;
+
+import java.io.*;
+
+import buffer.Crawler.Crawler;
+
+import buffer.ds.CitationGraph;
+import buffer.Crawler.ArvixCrawler;
+//import buffer.Crawler.ArxivCrawler;
+
+import buffer.model.Paper;
+
+import buffer.ds.Trie;  // Import your Trie class
+
+import java.util.stream.Collectors;	//for filters
+
+//import java.util.List;
+
+//import java.util.Scanner;
+
+//import java.io.BufferedReader;
+
+//import java.io.FileInputStream;
+
+//import java.io.FileReader;
+
+//import java.io.IOException;
+
+//import java.io.InputStream;
+
+
+
+
+
+<span class="nc" id="L45">public class Main {</span>
+
+    public static void main(String[] args) {
+
+<span class="nc" id="L49">        System.out.println(&quot; Welcome to Smart Research Paper Crawler&quot;);</span>
+
+
+
+        // Initialize Trie and add sample keywords
+
+<span class="nc" id="L55">        Trie trie = new Trie();</span>
+
+<span class="nc" id="L57">        loadKeywordsFromCSV(&quot;keywords.csv&quot;, trie);</span>
+
+
+
+        // Ask user for a prefix
+
+<span class="nc" id="L63">        Scanner sc = new Scanner(System.in);</span>
+
+<span class="nc" id="L65">        System.out.print(&quot; Enter topic keyword prefix: &quot;);</span>
+
+<span class="nc" id="L67">        String prefix = sc.nextLine();</span>
+
+
+
+        // Show suggestions
+
+<span class="nc" id="L73">        List&lt;String&gt; suggestions = trie.suggest(prefix);</span>
+
+        // adding keyword to the trie if not already present    
+        
+<span class="nc" id="L77">        boolean keywordAdded = false;</span>
+
+<span class="nc bnc" id="L79" title="All 2 branches missed.">        if (suggestions.isEmpty()) {</span>
+<span class="nc" id="L80">            System.out.println(&quot; No keyword suggestions found. Using typed keyword.&quot;);</span>
+<span class="nc" id="L81">            suggestions.add(prefix);  // fallback to original input</span>
+<span class="nc" id="L82">            appendKeywordToCSV(&quot;keywords.csv&quot;, prefix);</span>
+<span class="nc" id="L83">            keywordAdded = true;</span>
+        } else {
+<span class="nc" id="L85">            System.out.println(&quot;🔎 Suggestions:&quot;);</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            for (int i = 0; i &lt; suggestions.size(); i++) {</span>
+<span class="nc" id="L87">                System.out.println(&quot;[&quot; + (i + 1) + &quot;] &quot; + suggestions.get(i));</span>
+            }
+
+<span class="nc" id="L90">            System.out.print(&quot; Choose a number from the suggestions or 0 to use your original input: &quot;);</span>
+<span class="nc" id="L91">            int choice = sc.nextInt();</span>
+<span class="nc" id="L92">            sc.nextLine(); // consume newline</span>
+
+<span class="nc bnc" id="L94" title="All 4 branches missed.">            if (choice &gt; 0 &amp;&amp; choice &lt;= suggestions.size()) {</span>
+<span class="nc" id="L95">                prefix = suggestions.get(choice - 1);</span>
+            } else {
+<span class="nc bnc" id="L97" title="All 2 branches missed.">                if (!suggestions.contains(prefix)) {</span>
+<span class="nc" id="L98">                    appendKeywordToCSV(&quot;keywords.csv&quot;, prefix);</span>
+<span class="nc" id="L99">                    keywordAdded = true;</span>
+                }
+            }
+        }
+
+<span class="nc bnc" id="L104" title="All 2 branches missed.">        if (keywordAdded) {</span>
+<span class="nc" id="L105">            trie.insert(prefix);  // add to Trie as well so it's usable in current session</span>
+<span class="nc" id="L106">            System.out.println(&quot; New keyword added to CSV and Trie: &quot; + prefix);</span>
+        }
+
+
+        //paper search
+
+<span class="nc" id="L112">        System.out.println(&quot; Searching papers for: &quot; + prefix);</span>
+
+<span class="nc" id="L114">        List&lt;Paper&gt; results = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L116">        buffer.Crawler.Crawler arxivCrawler = new ArvixCrawler();</span>
+
+<span class="nc" id="L118">        buffer.Crawler.Crawler googleScholarCrawler = new GoogleScholarCrawler();</span>
+
+
+
+
+
+<span class="nc" id="L124">        results.addAll(arxivCrawler.search(prefix));</span>
+
+<span class="nc" id="L126">        results.addAll(googleScholarCrawler.search(prefix));  // Use Google Scholar results</span>
+
+
+
+
+
+
+
+<span class="nc bnc" id="L134" title="All 2 branches missed.">        if (results.isEmpty()) {</span>
+
+<span class="nc" id="L136">            System.out.println(&quot; No results found.&quot;);</span>
+
+<span class="nc" id="L138">            return;</span>
+
+        }
+
+
+
+<span class="nc bnc" id="L144" title="All 2 branches missed.">        for (Paper paper : results) {</span>
+
+<span class="nc" id="L146">            System.out.println(&quot;\n Title: &quot; + paper.getTitle());</span>
+
+<span class="nc" id="L148">            System.out.println(&quot; Authors: &quot; + String.join(&quot;, &quot;, paper.getAuthors()));</span>
+
+<span class="nc" id="L150">            System.out.println(&quot; Published: &quot; + paper.getPublicationDate());</span>
+
+<span class="nc" id="L152">            System.out.println(&quot; Link: &quot; + paper.getLink());</span>
+
+<span class="nc" id="L154">            System.out.println(&quot; Abstract: &quot; + paper.getAbstractText());</span>
+
+<span class="nc" id="L156">        }</span>
+
+        
+
+        ///CitationGragh
+
+<span class="nc" id="L162">        CitationGraph graph = new CitationGraph();</span>
+
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        for (Paper paper : results) {</span>
+
+<span class="nc" id="L166">            graph.addPaper(paper.getTitle());</span>
+
+<span class="nc" id="L168">        }</span>
+
+
+
+        // Simulate citations between top 3 results
+
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (results.size() &gt;= 3) {</span>
+
+<span class="nc" id="L176">            graph.addCitation(results.get(0).getTitle(), results.get(1).getTitle());</span>
+
+<span class="nc" id="L178">            graph.addCitation(results.get(1).getTitle(), results.get(2).getTitle());</span>
+
+        }
+
+
+
+<span class="nc" id="L184">        System.out.println(&quot;\n Citation Graph:&quot;);</span>
+
+<span class="nc" id="L186">        graph.printGraph();</span>
+
+
+
+        // Suggest relevant papers for the first paper
+
+<span class="nc bnc" id="L192" title="All 2 branches missed.">        if (!results.isEmpty()) {</span>
+
+<span class="nc" id="L194">            String baseTitle = results.get(0).getTitle();</span>
+
+<span class="nc" id="L196">            System.out.println(&quot;\n Related papers to: &quot; + baseTitle);</span>
+
+<span class="nc" id="L198">            List&lt;String&gt; related = graph.suggestRelevant(baseTitle);</span>
+
+<span class="nc bnc" id="L200" title="All 2 branches missed.">            if (related.isEmpty()) {</span>
+
+<span class="nc" id="L202">                System.out.println(&quot;⚠ No related papers found.&quot;);</span>
+
+            } else {
+
+<span class="nc bnc" id="L206" title="All 2 branches missed.">                for (String t : related) {</span>
+
+<span class="nc" id="L208">                    System.out.println(&quot;➡ &quot; + t);</span>
+
+<span class="nc" id="L210">                }</span>
+
+            }
+
+        }
+
+
+
+        // Show isolated nodes (papers not citing or cited)
+
+<span class="nc" id="L220">        List&lt;String&gt; isolated = graph.detectIsolatedPapers();</span>
+
+<span class="nc bnc" id="L222" title="All 2 branches missed.">        if (!isolated.isEmpty()) {</span>
+
+<span class="nc" id="L224">            System.out.println(&quot;\n Isolated papers (not citing or cited):&quot;);</span>
+
+<span class="nc bnc" id="L226" title="All 2 branches missed.">            for (String t : isolated) {</span>
+
+<span class="nc" id="L228">                System.out.println(&quot;• &quot; + t);</span>
+
+<span class="nc" id="L230">            }</span>
+
+        } else {
+
+<span class="nc" id="L234">            System.out.println(&quot;\n All papers are connected in the citation network.&quot;);</span>
+
+        }
+
+        
+
+        // Show filters
+
+<span class="nc" id="L242">        applyFiltersInteractive(sc, results);</span>
+
+<span class="nc" id="L244">    }</span>
+
+
+
+    public static void applyFiltersInteractive(Scanner sc, List&lt;Paper&gt; papers) {
+
+<span class="nc" id="L250">        List&lt;Paper&gt; filtered = new ArrayList&lt;&gt;(papers);</span>
+
+        while (true) {
+
+<span class="nc" id="L254">            System.out.println(&quot;\n Apply a filter:&quot;);</span>
+
+<span class="nc" id="L256">            System.out.println(&quot;[1] Filter by Author&quot;);</span>
+
+<span class="nc" id="L258">            System.out.println(&quot;[2] Filter by Year&quot;);</span>
+
+<span class="nc" id="L260">            System.out.println(&quot;[0] Show current results &amp; exit&quot;);</span>
+
+<span class="nc" id="L262">            System.out.print(&quot;➡ Your choice: &quot;);</span>
+
+<span class="nc" id="L264">            int opt = sc.nextInt();</span>
+
+<span class="nc" id="L266">            sc.nextLine(); // consume newline</span>
+
+
+
+<span class="nc bnc" id="L270" title="All 4 branches missed.">            switch (opt) {</span>
+
+                case 1:
+
+<span class="nc" id="L274">                    System.out.print(&quot; Enter author name to filter by: &quot;);</span>
+
+<span class="nc" id="L276">                    String author = sc.nextLine().toLowerCase();</span>
+
+<span class="nc" id="L278">                    filtered = filtered.stream()</span>
+
+<span class="nc" id="L280">                            .filter(p -&gt; p.getAuthors().stream().anyMatch(a -&gt; a.toLowerCase().contains(author)))</span>
+
+<span class="nc" id="L282">                            .collect(Collectors.toList());</span>
+
+<span class="nc" id="L284">                    System.out.println(&quot; Filtered by author: &quot; + author);</span>
+
+<span class="nc" id="L286">                    break;</span>
+
+
+
+                case 2:
+
+<span class="nc" id="L292">                    System.out.print(&quot; Enter minimum publication year (e.g., 2020): &quot;);</span>
+
+<span class="nc" id="L294">                    int year = sc.nextInt();</span>
+
+<span class="nc" id="L296">                    sc.nextLine(); // consume newline</span>
+
+<span class="nc" id="L298">                    filtered = filtered.stream()</span>
+
+<span class="nc" id="L300">                    	    .filter(p -&gt; {</span>
+
+<span class="nc" id="L302">                    	        String date = p.getPublicationDate();</span>
+
+<span class="nc bnc" id="L304" title="All 2 branches missed.">                    	        if (date != null) {</span>
+
+                    	            // Use regex to extract the first 4-digit year
+
+<span class="nc" id="L308">                    	            java.util.regex.Matcher matcher = java.util.regex.Pattern.compile(&quot;\\b(\\d{4})\\b&quot;).matcher(date);</span>
+
+<span class="nc bnc" id="L310" title="All 2 branches missed.">                    	            if (matcher.find()) {</span>
+
+<span class="nc" id="L312">                    	                int pubYear = Integer.parseInt(matcher.group(1));</span>
+
+<span class="nc bnc" id="L314" title="All 2 branches missed.">                    	                return pubYear &gt;= year;</span>
+
+                    	            }
+
+                    	        }
+
+<span class="nc" id="L320">                    	        return false;</span>
+
+                    	    })
+
+<span class="nc" id="L324">                    	    .collect(Collectors.toList());</span>
+
+
+
+
+
+<span class="nc" id="L330">                        System.out.println(&quot; Filtered by year &gt;= &quot; + year);</span>
+
+<span class="nc" id="L332">                        break;</span>
+
+
+
+                case 0:
+
+<span class="nc" id="L338">                    System.out.println(&quot;\n Final filtered results:&quot;);</span>
+
+<span class="nc" id="L340">                    printPaperList(filtered);</span>
+
+<span class="nc" id="L342">                    return;</span>
+
+
+
+                default:
+
+<span class="nc" id="L348">                    System.out.println(&quot;⚠ Invalid choice.&quot;);</span>
+
+            }
+
+<span class="nc" id="L352">        }</span>
+
+
+
+    }
+
+
+
+    private static void printPaperList(List&lt;Paper&gt; results) {
+
+<span class="nc bnc" id="L362" title="All 2 branches missed.">    	for (Paper paper : results) {</span>
+
+<span class="nc" id="L364">            System.out.println(&quot;\n Title: &quot; + paper.getTitle());</span>
+
+<span class="nc" id="L366">            System.out.println(&quot; Authors: &quot; + String.join(&quot;, &quot;, paper.getAuthors()));</span>
+
+<span class="nc" id="L368">            System.out.println(&quot; Published: &quot; + paper.getPublicationDate());</span>
+
+<span class="nc" id="L370">            System.out.println(&quot; Link: &quot; + paper.getLink());</span>
+
+<span class="nc" id="L372">            System.out.println(&quot; Abstract: &quot; + paper.getAbstractText());</span>
+
+<span class="nc" id="L374">        }</span>
+
+<span class="nc" id="L376">	}</span>
+
+
+
+	//CSV loader for keywords
+
+	public static void loadKeywordsFromCSV(String filePath, Trie trie) { 
+
+<span class="fc" id="L384">		try (BufferedReader br = new BufferedReader(new FileReader(filePath))) { </span>
+
+			String line; 
+
+<span class="fc bfc" id="L388" title="All 2 branches covered.">			while ((line = br.readLine()) != null) { </span>
+
+<span class="fc" id="L390">				line = line.trim(); </span>
+
+<span class="pc bpc" id="L392" title="1 of 2 branches missed.">				if (!line.isEmpty()) { </span>
+
+<span class="fc" id="L394">					trie.insert(line); } </span>
+
+				} 
+
+<span class="fc" id="L398">			} catch (IOException e) { </span>
+
+<span class="fc" id="L400">				System.out.println(&quot;⚠ Error reading keywords: &quot; + e.getMessage()); } </span>
+<span class="fc" id="L401">		}</span>
+
+	private static void appendKeywordToCSV(String filePath, String keyword) {
+<span class="fc" id="L404">	    try (FileWriter fw = new FileWriter(filePath, true);</span>
+<span class="fc" id="L405">	         BufferedWriter bw = new BufferedWriter(fw);</span>
+<span class="fc" id="L406">	         PrintWriter out = new PrintWriter(bw)) {</span>
+<span class="fc" id="L407">	        out.println(keyword);</span>
+<span class="nc" id="L408">	    } catch (IOException e) {</span>
+<span class="nc" id="L409">	        System.out.println(&quot;⚠ Error writing keyword to CSV: &quot; + e.getMessage());</span>
+<span class="fc" id="L410">	    }</span>
+<span class="fc" id="L411">	}</span>
+
+
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,8 @@
+GROUP,PACKAGE,CLASS,INSTRUCTION_MISSED,INSTRUCTION_COVERED,BRANCH_MISSED,BRANCH_COVERED,LINE_MISSED,LINE_COVERED,COMPLEXITY_MISSED,COMPLEXITY_COVERED,METHOD_MISSED,METHOD_COVERED
+crawler,buffer.core,Main,587,58,43,3,117,14,30,3,7,2
+crawler,buffer.Crawler,GoogleScholarCrawler,3,113,0,12,2,24,0,8,0,2
+crawler,buffer.Crawler,ArvixCrawler,7,150,5,11,2,33,5,5,0,2
+crawler,buffer.ds,TrieNode,0,11,0,0,0,4,0,1,0,1
+crawler,buffer.ds,CitationGraph,32,164,4,14,4,34,4,14,1,8
+crawler,buffer.ds,Trie,39,144,4,10,5,24,3,9,1,4
+crawler,buffer.model,Paper,18,36,0,0,2,13,2,6,2,6
